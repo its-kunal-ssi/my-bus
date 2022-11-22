@@ -19,3 +19,13 @@ samples, guidance on mobile development, and a full API reference.
 
 ## Short Description
 
+
+Functions of this Application
+
+Authenticate a user -> a user can be rider, driver, admin organiser.
+
+Pages -> 
+/auth - Authenticate a user using google Sign In.
+/map - a sample view of map
+/buses/[id] - list of buses in a organisation.
+
