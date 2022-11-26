@@ -1,45 +1,16 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:mybus/screen/AdminCreateBus.dart';
-import 'package:mybus/screen/AuthPage.dart';
-import 'package:mybus/screen/SampleMap.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mybus/firebase_options.dart';
+import 'package:mybus/providers/ApplicationState.dart';
+import 'package:mybus/utils/Appbar.dart';
 import 'package:provider/provider.dart';
 
-import 'firebase_options.dart';
-
-Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  return runApp(ChangeNotifierProvider(
-      create: (context) => ApplicationState(),
-      builder: ((context, child) => MyApp())));
-}
-
-class ApplicationState extends ChangeNotifier {
-  ApplicationState() {
-    init();
-  }
-  bool _loggedIn = false;
-  bool get loggedIn => _loggedIn;
-
-  Future<void> init() async {
-    await Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform);
-
-    // FirebaseUIAuth.configureProviders([EmailAuthProvider()]);
-
-    FirebaseAuth.instance.userChanges().listen((user) {
-      if (user != null) {
-        _loggedIn = true;
-      } else {
-        _loggedIn = false;
-      }
-      notifyListeners();
-    });
-    debugPrint('object');
-    print(FirebaseAuth.instance);
-  }
+void main() {
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -47,43 +18,41 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      initialRoute: '/',
-      title: 'My Bus',
-      routes: {
-        '/': (context) {
-          return const AuthPage();
-        },
-        '/home': (context) {
-          return const HomeScreen('hello from home');
-        },
-        '/auth': (context) {
-          return const AuthPage();
-        },
-        '/map': (context) {
-          return const SampleApp();
-        }
+    return ChangeNotifierProvider(
+      create: (context) => ApplicationState(),
+      builder: (context, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          routes: {
+            '/sign-in': (context) {
+              return SignInScreen(
+                providers: [EmailAuthProvider()],
+                actions: [
+                  AuthStateChangeAction(
+                    (context, state) {
+                      Navigator.pushReplacementNamed(context, '/');
+                    },
+                  )
+                ],
+              );
+            }
+          },
+          home: HomePage(),
+        );
       },
     );
   }
 }
 
-class HomeScreen extends StatelessWidget {
-  final String secret;
-  const HomeScreen(this.secret, {super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Text('Hello From HomeScreen'),
-          TextButton(
-              onPressed: (() {
-                Navigator.pushNamed(context, '/auth');
-              }),
-              child: Text('${secret}'))
-        ]),
+      appBar: MyAppBar(),
+      body: Container(
+        child: Text("Hello"),
       ),
     );
   }
