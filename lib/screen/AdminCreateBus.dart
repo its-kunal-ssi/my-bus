@@ -17,12 +17,13 @@ class _AdminCreateBusState extends State<AdminCreateBus> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: myAppBar,
+      appBar: MyAppBar(),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(18.0),
           child: SingleChildScrollView(
-            child: Column( //Bus Details Form
+            child: Column(
+              //Bus Details Form
               children: [
                 // Heading
                 Text('Create Bus',
@@ -74,13 +75,15 @@ class _AdminCreateBusState extends State<AdminCreateBus> {
                     ),
                   ),
                 ),
-                SizedBox(height: 30,),
+                SizedBox(
+                  height: 30,
+                ),
                 // Okay Button
                 ElevatedButton(
-                  onPressed: (){
-                    // Link to Next Page
-          
-                  }, child: Text('Confirm'))
+                    onPressed: () {
+                      // Link to Next Page
+                    },
+                    child: Text('Confirm'))
               ],
             ),
           ),

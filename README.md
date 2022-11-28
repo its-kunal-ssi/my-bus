@@ -32,3 +32,11 @@ Pages ->
 
 
 Screens to build
+profile
+list of bus screen
+your buses
+detail view of bus
+
+Stacks to see
+Maps
+Gps Location
