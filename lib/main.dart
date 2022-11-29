@@ -31,9 +31,16 @@ class MyApp extends StatelessWidget {
       create: (context) => ApplicationState(),
       builder: (context, child) {
         return MaterialApp(
+          initialRoute: "/buses",
           theme: ThemeData(textTheme: GoogleFonts.poppinsTextTheme()),
           debugShowCheckedModeBanner: false,
           routes: {
+            '/': (context) {
+              return IntroPage();
+            },
+            '/home':(context) {
+              return HomePage();
+            },
             '/buses': ((context) {
               return MyBuses();
             }),
@@ -50,7 +57,6 @@ class MyApp extends StatelessWidget {
               );
             }
           },
-          home: IntroPage(),
         );
       },
     );

@@ -31,14 +31,7 @@ class IntroPage extends StatelessWidget {
             ),
             ElevatedButton(
                 onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return HomePage();
-                      },
-                    ),
-                  );
+                  Navigator.pushReplacementNamed(context, '/home');
                 },
                 child: Text('Get Started'))
           ],

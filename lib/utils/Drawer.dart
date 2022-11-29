@@ -8,7 +8,7 @@ Drawer MyDrawer(context) {
       children: [
         ListTile(
           onTap: () {
-            Navigator.pushReplacementNamed(context, '/');
+            Navigator.pushReplacementNamed(context, '/home');
           },
           title: Text('Home'),
         ),
