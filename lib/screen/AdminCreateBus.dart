@@ -22,100 +22,105 @@ class _AdminCreateBusState extends State<AdminCreateBus> {
     return Scaffold(
       appBar: MyAppBar(),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(18.0),
-          child: SingleChildScrollView(
-            child: Consumer<ApplicationState>(
-              builder: (context, value, child) {
-                return Column(
-                  //Bus Details Form
-                  children: [
-                    // Heading
-                    Text('Create Bus',
-                        style: GoogleFonts.poppins(
-                            fontSize: 24, fontWeight: FontWeight.bold)),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    // Divider
-                    Divider(thickness: 2),
-                    TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          busname = value.toString();
-                        });
-                      },
-                      decoration: InputDecoration(
-                        label: Text(
-                          'Bus Name',
-                          style: TextPoppinStyle,
+        child: Consumer<ApplicationState>(
+          builder: (context, value, child) {
+            return Padding(
+              padding: const EdgeInsets.all(18.0),
+              child: SingleChildScrollView(
+                child: Consumer<ApplicationState>(
+                  builder: (context, value, child) {
+                    driverid = value.fireauth.currentUser!.uid;
+                    return Column(
+                      //Bus Details Form
+                      children: [
+                        // Heading
+                        Text('Create Bus',
+                            style: GoogleFonts.poppins(
+                                fontSize: 24, fontWeight: FontWeight.bold)),
+                        SizedBox(
+                          height: 20,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          busno = value.toString();
-                        });
-                      },
-                      decoration: InputDecoration(
-                        label: Text(
-                          'Bus Number',
-                          style: TextPoppinStyle,
+                        // Divider
+                        Divider(thickness: 2),
+                        TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              busname = value.toString();
+                            });
+                          },
+                          decoration: InputDecoration(
+                            label: Text(
+                              'Bus Name',
+                              style: TextPoppinStyle,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          driver = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        label: Text(
-                          'Bus Driver Name',
-                          style: TextPoppinStyle,
+                        SizedBox(
+                          height: 20,
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 20,
-                    ),
-                    TextField(
-                      onChanged: (value) {
-                        setState(() {
-                          busmodel = value;
-                        });
-                      },
-                      decoration: InputDecoration(
-                        label: Text(
-                          'Bus Model Name',
-                          style: TextPoppinStyle,
+                        TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              busno = value.toString();
+                            });
+                          },
+                          decoration: InputDecoration(
+                            label: Text(
+                              'Bus Number',
+                              style: TextPoppinStyle,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 30,
-                    ),
-                    // Okay Button
-                    ElevatedButton(
-                        onPressed: () {
-                          // Link to Next Page
-                          value.createBus(busno, busname, busmodel, driver,
-                              driverid, context);
-                        },
-                        child: Text('Confirm'))
-                  ],
-                );
-              },
-            ),
-          ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              driver = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            label: Text(
+                              'Bus Driver Name',
+                              style: TextPoppinStyle,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 20,
+                        ),
+                        TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              busmodel = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            label: Text(
+                              'Bus Model Name',
+                              style: TextPoppinStyle,
+                            ),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 30,
+                        ),
+                        // Okay Button
+                        ElevatedButton(
+                            onPressed: () {
+                              // Link to Next Page
+                              value.createBus(busno, busname, busmodel, driver,
+                                  driverid, context);
+                            },
+                            child: Text('Confirm'))
+                      ],
+                    );
+                  },
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

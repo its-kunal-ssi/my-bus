@@ -76,6 +76,8 @@ class MyBusesListState extends State<MyBusesList> {
                   Map<String, dynamic> adb = d as Map<String, dynamic>;
                   adb['busno'] = snapshot.data?.docs[index].id as String;
                   return ListTile(
+                    onTap: () {
+                    },
                     trailing: SizedBox(
                       width: 50,
                       child: Row(

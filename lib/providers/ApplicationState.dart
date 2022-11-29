@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mybus/firebase_options.dart';
 
@@ -14,6 +15,7 @@ class ApplicationState extends ChangeNotifier {
   bool _isLoading = true, _loggedIn = false;
   bool get isLoading => _isLoading;
   bool get loggedIn => _loggedIn;
+  late FirebaseAuth fireauth;
   late FirebaseDatabase db;
   late FirebaseFirestore firedb;
   late Stream<QuerySnapshot> busesData;
@@ -25,9 +27,11 @@ class ApplicationState extends ChangeNotifier {
     FirebaseApp app = await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
     FirebaseUIAuth.configureProviders([EmailAuthProvider()]);
-    FirebaseAuth.instance.authStateChanges().listen((event) {
+    fireauth = FirebaseAuth.instanceFor(app: app);
+    fireauth.authStateChanges().listen((event) {
       if (event != null) {
         _loggedIn = true;
+        syncLocations();
         notifyListeners();
       } else {
         _loggedIn = false;
@@ -64,6 +68,31 @@ class ApplicationState extends ChangeNotifier {
 
   Future<void> removeBus(String busno) async {
     await firedb.collection('buses').doc(busno).delete();
+  }
+
+  Future<void> syncLocations() async {
+    var adb = [];
+    firedb.collection('buses').snapshots().listen((event) {
+      adb.clear();
+      event.docs.forEach((element) {
+        adb.add({...element.data(), "busno": element.id});
+      });
+      adb.forEach((element) {
+        print(element['driverid']);
+        if (element['driverid'] == fireauth.currentUser!.uid.toString()) {
+          Geolocator.getPositionStream(
+                  locationSettings: LocationSettings(
+                      accuracy: LocationAccuracy.best, distanceFilter: 0))
+              .listen((event) async {
+            db.ref("buses/${element['busno']}").set({
+              "lat": event.latitude,
+              "long": event.longitude,
+              "timestamp": DateTime.now().millisecondsSinceEpoch
+            });
+          });
+        }
+      });
+    });
   }
 }
 
