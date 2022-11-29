@@ -7,6 +7,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mybus/firebase_options.dart';
 
 class ApplicationState extends ChangeNotifier {
@@ -39,6 +40,18 @@ class ApplicationState extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> createBus(String busno, String busname, String busmodel,
+      String driver, String driverId, BuildContext context) async {
+    await firedb.collection('buses').doc(busno).set({
+      "driver": driver,
+      "driverId": driverId,
+      "busModel": busmodel,
+      "name": busname,
+      "busn0": busno
+    });
+    Navigator.pop(context);
+  }
+
   void SignOutUser() {
     FirebaseAuth.instance.signOut();
     notifyListeners();
@@ -48,4 +61,24 @@ class ApplicationState extends ChangeNotifier {
     busesData = firedb.collection('buses').snapshots();
     print(lisBuses);
   }
+
+  Future<void> removeBus(String busno) async {
+    await firedb.collection('buses').doc(busno).delete();
+  }
+}
+
+class Bus {
+  String driver, driverid, busModel;
+  LatLng busLoc;
+  Bus(
+      {required this.driver,
+      required this.driverid,
+      required this.busModel,
+      required this.busLoc});
+  Map<String, dynamic> toMap() => {
+        "driver": driver,
+        "driverid": driverid,
+        "busModel": busModel,
+        "busLoc": busLoc
+      };
 }

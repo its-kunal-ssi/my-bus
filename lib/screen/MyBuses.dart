@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:mybus/providers/ApplicationState.dart';
+import 'package:mybus/screen/AdminCreateBus.dart';
 import 'package:mybus/utils/Appbar.dart';
 import 'package:mybus/utils/Drawer.dart';
 import 'package:provider/provider.dart';
@@ -18,6 +19,14 @@ class MyBuses extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: ((context) {
+            return AdminCreateBus();
+          })));
+        },
+        child: Icon(Icons.add),
+      ),
       drawer: MyDrawer(context),
       appBar: MyAppBar(),
       body: Column(
@@ -60,12 +69,31 @@ class MyBusesListState extends State<MyBusesList> {
                 itemCount: snapshot.data!.docs.length,
                 itemBuilder: (context, index) {
                   if (ConnectionState.waiting == snapshot.connectionState) {
-                    return CircularProgressIndicator();
+                    return SizedBox(
+                        height: 50, child: CircularProgressIndicator());
                   }
-                  Map<String, String> d = Map.from(snapshot.data!.docs[index].data());
+                  var d = snapshot.data?.docs[index].data();
+                  Map<String, dynamic> adb = d as Map<String, dynamic>;
+                  adb['busno'] = snapshot.data?.docs[index].id as String;
                   return ListTile(
-                    title:
-                        Text("${d['driver']}"),
+                    trailing: SizedBox(
+                      width: 50,
+                      child: Row(
+                        children: [
+                          IconButton(
+                              onPressed: () {
+                                value.removeBus(adb['busno']);
+                              },
+                              icon: Icon(Icons.delete))
+                        ],
+                      ),
+                    ),
+                    subtitle: Text('Bus Number : ${adb['busno']}'),
+                    title: Text(
+                      "Driver Name : ${adb['driver']}",
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
                   );
                 },
               );

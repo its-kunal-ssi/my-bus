@@ -13,6 +13,7 @@ import 'package:mybus/key.dart';
 import 'package:mybus/providers/ApplicationState.dart';
 import 'package:mybus/screen/IntroPage.dart';
 import 'package:mybus/screen/MyBuses.dart';
+import 'package:mybus/screen/SampleMap.dart';
 import 'package:mybus/utils/Appbar.dart';
 import 'package:mybus/utils/Drawer.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
             '/': (context) {
               return IntroPage();
             },
-            '/home':(context) {
+            '/home': (context) {
               return HomePage();
             },
             '/buses': ((context) {
@@ -55,7 +56,8 @@ class MyApp extends StatelessWidget {
                   )
                 ],
               );
-            }
+            },
+            "/samplemap": (context) => SampleApp()
           },
         );
       },
