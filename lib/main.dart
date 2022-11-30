@@ -31,35 +31,37 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => ApplicationState(),
       builder: (context, child) {
-        return MaterialApp(
-          initialRoute: "/buses",
-          theme: ThemeData(textTheme: GoogleFonts.poppinsTextTheme()),
-          debugShowCheckedModeBanner: false,
-          routes: {
-            '/': (context) {
-              return IntroPage();
+        return Consumer<ApplicationState>(builder: ((context, value, child) {
+          return MaterialApp(
+            initialRoute: value.fireauth.currentUser != null ? "/home" : "/",
+            theme: ThemeData(textTheme: GoogleFonts.poppinsTextTheme()),
+            debugShowCheckedModeBanner: false,
+            routes: {
+              '/': (context) {
+                return IntroPage();
+              },
+              '/home': (context) {
+                return HomePage();
+              },
+              '/buses': ((context) {
+                return MyBuses();
+              }),
+              '/sign-in': (context) {
+                return SignInScreen(
+                  providers: [EmailAuthProvider()],
+                  actions: [
+                    AuthStateChangeAction(
+                      (context, state) {
+                        Navigator.pushReplacementNamed(context, '/home');
+                      },
+                    )
+                  ],
+                );
+              },
+              "/samplemap": (context) => SampleApp()
             },
-            '/home': (context) {
-              return HomePage();
-            },
-            '/buses': ((context) {
-              return MyBuses();
-            }),
-            '/sign-in': (context) {
-              return SignInScreen(
-                providers: [EmailAuthProvider()],
-                actions: [
-                  AuthStateChangeAction(
-                    (context, state) {
-                      Navigator.pushReplacementNamed(context, '/');
-                    },
-                  )
-                ],
-              );
-            },
-            "/samplemap": (context) => SampleApp()
-          },
-        );
+          );
+        }));
       },
     );
   }
@@ -101,7 +103,6 @@ class _MyPostitionStremState extends State<MyPostitionStrem> {
   }
 
   Future<void> init() async {
-    print('Hello from position stream');
     LocationPermission permission = await Geolocator.requestPermission();
     Geolocator.getPositionStream(
             locationSettings: LocationSettings(
@@ -115,24 +116,35 @@ class _MyPostitionStremState extends State<MyPostitionStrem> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text('Latitude: ${p?.latitude}, Longitude: ${p?.longitude}'),
-        StreamBuilder<Position>(
-          stream: posStream,
-          builder: ((context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
-            }
-            if (snapshot.connectionState == ConnectionState.active) {
-              return Container(
-                  child: Text(
-                      'Lat: ${snapshot.data?.latitude.toString()}, Long: ${snapshot.data?.longitude.toString()}'));
-            }
-            return Text('Found Nothing');
-          }),
-        )
-      ],
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: Column(
+        children: [
+          StreamBuilder<Position>(
+            stream: posStream,
+            builder: ((context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator();
+              }
+              if (snapshot.connectionState == ConnectionState.active) {
+                return Column(
+                  children: [
+                    Text(
+                      'Your Location is',
+                      style:
+                          TextStyle(fontSize: 20, color: Colors.grey.shade600),
+                    ),
+                    Container(
+                        child: Text(
+                            'Lat: ${snapshot.data?.latitude.toString()}, Long: ${snapshot.data?.longitude.toString()}')),
+                  ],
+                );
+              }
+              return Text('Found Nothing');
+            }),
+          )
+        ],
+      ),
     );
   }
 }

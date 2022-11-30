@@ -78,8 +78,8 @@ class ApplicationState extends ChangeNotifier {
         adb.add({...element.data(), "busno": element.id});
       });
       adb.forEach((element) {
-        print(element['driverid']);
-        if (element['driverid'] == fireauth.currentUser!.uid.toString()) {
+        print(element['driverId']);
+        if (element['driverId'] == fireauth.currentUser!.uid.toString()) {
           Geolocator.getPositionStream(
                   locationSettings: LocationSettings(
                       accuracy: LocationAccuracy.best, distanceFilter: 0))

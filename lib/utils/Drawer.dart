@@ -14,15 +14,9 @@ Drawer MyDrawer(context) {
         ),
         ListTile(
           onTap: () {
-            Navigator.pushNamed(context, '/profile');
-          },
-          title: Text('Profile'),
-        ),
-        ListTile(
-          onTap: () {
             Navigator.pushNamed(context, '/buses');
           },
-          title: Text('My Buses'),
+          title: Text('Buses'),
         )
       ],
     ),
