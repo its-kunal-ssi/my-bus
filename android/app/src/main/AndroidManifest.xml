@@ -3,6 +3,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+<meta-data android:name="com.google.android.geo.AIzaSyBGoj03Bq-5P3FnbRj9oWUalbQMFfGc8Co" android:value="AIzaSyBGoj03Bq-5P3FnbRj9oWUalbQMFfGc8Co" />
    <application
         android:label="mybus"
         android:name="${applicationName}"
