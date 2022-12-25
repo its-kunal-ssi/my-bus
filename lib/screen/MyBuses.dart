@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:mybus/providers/ApplicationState.dart';
 import 'package:mybus/screen/AdminCreateBus.dart';
 import 'package:mybus/utils/Appbar.dart';
@@ -220,7 +221,18 @@ class BusDetailPage extends StatelessWidget {
                                     style: TextStyle(
                                         fontStyle: FontStyle.italic,
                                         color: Colors.grey.shade600),
-                                  )
+                                  ),
+                                  SizedBox(
+                                    height: 100,
+                                    width: 100,
+                                    child: GoogleMap(
+                                      initialCameraPosition: CameraPosition(
+                                        target: LatLng(ad['lat'] ,
+                                            ad['long'] ),
+                                        zoom: 12,
+                                      ),
+                                    ),
+                                  ),
                                 ],
                               ),
                             );
@@ -247,6 +259,3 @@ class BusDetailPage extends StatelessWidget {
     );
   }
 }
-
-
-
