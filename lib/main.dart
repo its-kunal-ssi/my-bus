@@ -1,22 +1,17 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:mybus/firebase_options.dart';
-import 'package:mybus/key.dart';
 import 'package:mybus/providers/ApplicationState.dart';
 import 'package:mybus/screen/IntroPage.dart';
-import 'package:mybus/screen/MyBuses.dart';
-import 'package:mybus/screen/SampleMap.dart';
+import 'package:mybus/screen/LoadingScreen.dart';
+import 'package:mybus/screen/MyBus.dart';
 import 'package:mybus/utils/Appbar.dart';
 import 'package:mybus/utils/Drawer.dart';
 import 'package:provider/provider.dart';
+import 'package:webviewx/webviewx.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,10 +28,17 @@ class MyApp extends StatelessWidget {
       builder: (context, child) {
         return Consumer<ApplicationState>(builder: ((context, value, child) {
           return MaterialApp(
-            initialRoute: value.fireauth.currentUser != null ? "/home" : "/",
+            initialRoute: value.isLoading
+                ? "/loading"
+                : value.fireauth.currentUser != null
+                    ? "/home"
+                    : "/",
             theme: ThemeData(textTheme: GoogleFonts.poppinsTextTheme()),
             debugShowCheckedModeBanner: false,
             routes: {
+              '/loading':(context) {
+                return MyLoader();
+              },
               '/': (context) {
                 return IntroPage();
               },
@@ -58,7 +60,6 @@ class MyApp extends StatelessWidget {
                   ],
                 );
               },
-              "/samplemap": (context) => SampleApp()
             },
           );
         }));
@@ -67,9 +68,14 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,7 +97,7 @@ class MyPostitionStrem extends StatefulWidget {
 
 class _MyPostitionStremState extends State<MyPostitionStrem> {
   // StreamSubscription<Position> positionStream = Geolocator
-  late Position? p = null;
+  var webViewController;
   final Stream<Position> posStream = Geolocator.getPositionStream();
   final LocationSettings lc =
       LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 100);
@@ -99,19 +105,6 @@ class _MyPostitionStremState extends State<MyPostitionStrem> {
   @override
   void initState() {
     super.initState();
-    init();
-  }
-
-  Future<void> init() async {
-    LocationPermission permission = await Geolocator.requestPermission();
-    Geolocator.getPositionStream(
-            locationSettings: LocationSettings(
-                accuracy: LocationAccuracy.high, distanceFilter: 100))
-        .listen((Position? position) {
-      setState(() {
-        p = position;
-      });
-    });
   }
 
   @override
@@ -119,29 +112,96 @@ class _MyPostitionStremState extends State<MyPostitionStrem> {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          StreamBuilder<Position>(
-            stream: posStream,
-            builder: ((context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator();
-              }
-              if (snapshot.connectionState == ConnectionState.active) {
-                return Column(
-                  children: [
-                    Text(
-                      'Your Location is',
-                      style:
-                          TextStyle(fontSize: 20, color: Colors.grey.shade600),
+          Consumer<ApplicationState>(
+            builder: (context, value, child) {
+              List<String> htl = [
+                '''<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+    <style>
+    </style>
+</head>
+
+<body>
+    <div style="height: 370px; width: 300px; ">
+        <div id="map" style="min-height: 100%; min-width: 100%; margin: 0px auto; padding: 0px auto;"></div>
+    </div>
+
+</body>
+<script src="./app.js" defer></script>
+
+</html>'''
+              ];
+              List<String> jss = [
+                '''console.log("Hello")
+mapboxgl.accessToken = 'pk.eyJ1Ijoia3VuYWxweTMiLCJhIjoiY2xjMjYwNHVrMGU5MzN2cWZzaGJldndqMSJ9.r7tWzKnyhCkQKbPbfN2hjg';
+var map = new mapboxgl.Map({
+    container: 'map',
+    style: 'mapbox://styles/mapbox/streets-v11',
+    center: [${value.currLoc.longitude}, ${value.currLoc.latitude}],
+    zoom: 14,
+
+});
+map.addControl(new mapboxgl.NavigationControl());
+const marker = new mapboxgl.Marker({
+    color: "#0ea5e9"
+})
+    .setLngLat([${value.currLoc.longitude}, ${value.currLoc.latitude}])
+    .addTo(map);
+'''
+              ];
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                      "Your Current Location is: \nLatitude: ${value.currLoc.latitude} Longitude: ${value.currLoc.longitude}"),
+                  SizedBox(
+                    height: 30,
+                  ),
+                  ListTile(
+                    title: Text("Sync Locations"),
+                    trailing: Switch(
+                      value: value.isSyncLocations,
+                      onChanged: ((va) {
+                        value.setIsSyncLoc(va);
+                      }),
                     ),
-                    Container(
-                        child: Text(
-                            'Lat: ${snapshot.data?.latitude.toString()}, Long: ${snapshot.data?.longitude.toString()}')),
-                  ],
-                );
-              }
-              return Text('Found Nothing');
-            }),
+                  ),
+                  SizedBox(
+                    height: 30,
+                  ),
+                  Stack(children: [
+                    WebViewX(
+                      onWebViewCreated: (controller) =>
+                          webViewController = controller,
+                      width: 400,
+                      height: 400,
+                      initialSourceType: SourceType.html,
+                      initialContent: htl.join(),
+                      jsContent: {
+                        EmbeddedJsContent(
+                          js: jss.join(),
+                        )
+                      },
+                    ),
+                    ElevatedButton(
+                        onPressed: () {
+                          webViewController.reload();
+                        },
+                        child: Icon(Icons.refresh))
+                  ])
+                ],
+              );
+            },
           )
         ],
       ),

@@ -21,19 +21,21 @@ AppBar MyAppBar() {
                   )
                 : value.loggedIn
                     ? TextButton(
+                        child: Text('Sign Out',
+                            style: TextStyle(color: Colors.white)),
                         onPressed: () {
                           FirebaseAuth.instance.signOut();
                           Provider.of<ApplicationState>(context).SignOutUser();
                         },
-                        child: Text('Sign Out',
-                            style: TextStyle(color: Colors.white)),
                       )
                     : TextButton(
                         onPressed: () {
                           Navigator.pushReplacementNamed(context, '/sign-in');
                         },
-                        child: Text('Sign In',
-                            style: TextStyle(color: Colors.white)),
+                        child: Text(
+                          'Sign In',
+                          style: TextStyle(color: Colors.white),
+                        ),
                       ));
           },
         )

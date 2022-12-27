@@ -19,28 +19,81 @@ class ApplicationState extends ChangeNotifier {
   late FirebaseDatabase db;
   late FirebaseFirestore firedb;
   late Stream<QuerySnapshot> busesData;
+  bool isSyncLocations = true;
   List<dynamic> lisBuses = [];
+  late StreamSubscription<Position> _PositionStream;
+
+  StreamSubscription<Position> get PositionStream => _PositionStream;
+
+  set PositionStream(StreamSubscription<Position> PositionStream) {
+    _PositionStream = PositionStream;
+  }
+
+  late Position currLoc;
+
   ApplicationState() {
     init();
   }
   Future<void> init() async {
+    await Geolocator.checkPermission().then((value) {
+      if (value == LocationPermission.denied ||
+          value == LocationPermission.deniedForever) {
+        Geolocator.requestPermission();
+      }
+    });
+    _isLoading = true;
+    notifyListeners(); 
+    PositionStream = Geolocator.getPositionStream(
+            locationSettings: LocationSettings(accuracy: LocationAccuracy.best))
+        .listen((event) async {
+      currLoc = event;
+      print(event);
+      notifyListeners();
+      lisBuses.forEach((element) {
+        if (element["driverId"] == fireauth.currentUser?.uid) {
+          db.ref("buses/${element['busno']}").set({
+            "lat": event.latitude,
+            "long": event.longitude,
+            "timestamp": DateTime.now().millisecondsSinceEpoch
+          });
+        }
+      });
+      await Future.delayed(Duration(seconds: 5));
+    });
     FirebaseApp app = await Firebase.initializeApp(
         options: DefaultFirebaseOptions.currentPlatform);
     FirebaseUIAuth.configureProviders([EmailAuthProvider()]);
     fireauth = FirebaseAuth.instanceFor(app: app);
+    db = FirebaseDatabase.instanceFor(app: app);
+    firedb = FirebaseFirestore.instanceFor(app: app);
     fireauth.authStateChanges().listen((event) {
       if (event != null) {
         _loggedIn = true;
-        syncLocations();
         notifyListeners();
       } else {
         _loggedIn = false;
         notifyListeners();
       }
     });
-    db = FirebaseDatabase.instanceFor(app: app);
-    firedb = FirebaseFirestore.instanceFor(app: app);
+    firedb.collection('buses').snapshots().listen((event) {
+      lisBuses.clear();
+      event.docs.forEach((element) {
+        lisBuses.add(
+            {"busno": element.id, ...element.data() as Map<String, dynamic>});
+      });
+      notifyListeners();
+    });
     _isLoading = false;
+    notifyListeners();
+  }
+
+  void setIsSyncLoc(bool bb) {
+    isSyncLocations = bb;
+    if (isSyncLocations) {
+      _PositionStream.resume();
+    } else {
+      _PositionStream.pause();
+    }
     notifyListeners();
   }
 
@@ -51,7 +104,7 @@ class ApplicationState extends ChangeNotifier {
       "driverId": driverId,
       "busModel": busmodel,
       "name": busname,
-      "busn0": busno
+      "busno": busno
     });
     Navigator.pop(context);
   }
@@ -61,38 +114,8 @@ class ApplicationState extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> getData() async {
-    busesData = firedb.collection('buses').snapshots();
-    print(lisBuses);
-  }
-
   Future<void> removeBus(String busno) async {
     await firedb.collection('buses').doc(busno).delete();
-  }
-
-  Future<void> syncLocations() async {
-    var adb = [];
-    firedb.collection('buses').snapshots().listen((event) {
-      adb.clear();
-      event.docs.forEach((element) {
-        adb.add({...element.data(), "busno": element.id});
-      });
-      adb.forEach((element) {
-        print(element['driverId']);
-        if (element['driverId'] == fireauth.currentUser!.uid.toString()) {
-          Geolocator.getPositionStream(
-                  locationSettings: LocationSettings(
-                      accuracy: LocationAccuracy.best, distanceFilter: 0))
-              .listen((event) async {
-            db.ref("buses/${element['busno']}").set({
-              "lat": event.latitude,
-              "long": event.longitude,
-              "timestamp": DateTime.now().millisecondsSinceEpoch
-            });
-          });
-        }
-      });
-    });
   }
 }
 
@@ -111,3 +134,8 @@ class Bus {
         "busLoc": busLoc
       };
 }
+
+
+// sync bus data with application state
+
+
